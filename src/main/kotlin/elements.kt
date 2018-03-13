@@ -7,11 +7,12 @@ import java.util.function.Supplier
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 
-class ListItemInput(val caseSensitive:Boolean = false, var prompt: String = ""):Input<String>(){
+class ListItemInput(val caseSensitive:Boolean = false):Input<String>(){
         private val items = LinkedHashMap<String, String>()
         var failMessage:String = "That's not a valid choice. " +
                 "Please try again."
-        private var key:String? = null
+        var prompt = ""
+    private var key:String? = null
         private var value:String? = null
 
         constructor(vararg itemList:Pair<String,String>):this(){
@@ -103,7 +104,7 @@ class FlagInput(var prompt: String = "",val default:Char? = null, vararg val fla
     override fun run() {
         val end = StringBuilder()
         end.append(if(default != null) default.toString().toUpperCase() else "")
-        var remaining:List<Char> = flags.filter { f -> f != null && f != default }
+        var remaining:List<Char> = flags.filter { f -> f != default }
         for(flag in remaining) end.append(flag)
         var haveAnswer:Boolean = false
         while(!haveAnswer) {
@@ -116,13 +117,15 @@ class FlagInput(var prompt: String = "",val default:Char? = null, vararg val fla
                     continue
                 }
                 else if(response.length == 1 &&
-                            (response as Char in flags || response as Char == default?.toUpperCase() as Char)){
-                    result = response as Char
+                            (response.toCharArray()[0] in flags || response.toCharArray()[0] == default?.toUpperCase())){
+                    result = response.toCharArray()[0]
                     haveAnswer = true
                 }else{
                         print("Input does not match recognized flag!")
                         continue
                 }
+            }catch(e:Exception){
+                println("something broke--please try again")
             }
         }
     }
@@ -175,7 +178,7 @@ class NumberInput(var prompt:String = ""):Input<Number>(){
 class Output(text:String? = null):IOElement{
     val texts:ArrayList<Supplier<String>> = ArrayList()
     init{
-        if(text != null) texts.add(Supplier{text as String})
+        if(text != null) texts.add(Supplier{text!!})
     }
 
     constructor(futureText:Supplier<String>):this(null){
